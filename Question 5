@@ -1,0 +1,58 @@
+What are defer, panic and recover? How do you recover from a run-time panic?
+
+Answer:
+
+Defer:
+
+1)Defer is used to ensure that a function call is performed later in a program’s execution, usually for purposes of cleaning up the memory or closing the file.
+
+2) It is similar to 'Finally', which is what we have in Java to ensure a set of tasks happen.
+
+3)Suppose we wanted to create a file, write to it, and then close when we’re done. Here’s how we could do that with defer.
+Consider the following example,
+createFileRoutine will create the file. 'defer' will defer the closeFileRoutine till the enclosing function runs it's course.
+
+
+import "fmt"
+import "os"
+	
+
+func main() {
+
+
+    f := createFileRoutine("/tmp/defer.txt")
+    defer closeFileRoutine(f)
+    writeFileRoutine(f)
+}
+
+Panic:
+1)A panic generally indicates a programmer error (for example attempting to access an index of an array
+that's out of bounds, forgetting to initialize a map, etc.) or an exceptional condition that there's no easy way to
+recover from.
+
+
+2)If the function F calls panic, execution of F stops, any deferred functions in F are executed normally, and then F returns to its caller. To the caller, F then behaves like a call to panic. The process continues up the stack until all functions in the current goroutine have returned, at which point the program crashes. Panics can be initiated by invoking panic directly. They can also be caused by runtime errors, such as out-of-bounds array accesses. 
+
+3) Mostly we use to fail fast on erros those does not occur in normal memory execution. 'Segementation Fault' given by GCC compiler is one such example of a run-time error.
+
+
+Recover:
+1) I is a built-in function that regains control of a panicking goroutine. Recover is only useful inside deferred functions. During normal execution, a call to recover will return nil and have no other effect. If the current goroutine is panicking, a call to recover will capture the value given to panic and resume normal execution. 
+
+
+HOW DO YOU RECOVER FROM A RUNTIME PANIC?
+
+ANSWER:
+
+We can recovery from a runtime panic by defering a recovery function. Have a look at the following code.
+str will have the string value 'PANIC' after panic occures as recovery function is deferred after the main. We can probably resume the normal execution from here.
+
+package main
+import "fmt"
+func main() {
+	defer func() {
+		str := recover()
+		fmt.Println(str)
+				}()
+		panic("PANIC")
+}
